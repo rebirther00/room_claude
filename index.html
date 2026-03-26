@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Homepage</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    /* Clock & Date */
+    .clock-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .time {
+      font-size: 5rem;
+      font-weight: 200;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+
+    .date {
+      font-size: 1.2rem;
+      color: #aaa;
+      margin-top: 8px;
+    }
+
+    /* Search */
+    .search-box {
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: background 0.3s;
+    }
+
+    .search-box input::placeholder { color: #888; }
+    .search-box input:focus { background: rgba(255,255,255,0.18); }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    @media (max-width: 700px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .time { font-size: 3rem; }
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #888;
+      margin-bottom: 16px;
+    }
+
+    /* Weather */
+    .weather-main {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .weather-icon {
+      font-size: 3.5rem;
+    }
+
+    .weather-temp {
+      font-size: 3rem;
+      font-weight: 300;
+      color: #fff;
+    }
+
+    .weather-desc {
+      font-size: 1rem;
+      color: #bbb;
+      text-transform: capitalize;
+    }
+
+    .weather-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .weather-detail {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    .weather-detail span {
+      color: #ccc;
+    }
+
+    .weather-location {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 12px;
+    }
+
+    /* News */
+    .news-list {
+      list-style: none;
+    }
+
+    .news-item {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .news-item:last-child { border-bottom: none; }
+
+    .news-item a {
+      color: #ddd;
+      text-decoration: none;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      display: block;
+      transition: color 0.2s;
+    }
+
+    .news-item a:hover { color: #7c83ff; }
+
+    .news-source {
+      font-size: 0.75rem;
+      color: #777;
+      margin-top: 4px;
+    }
+
+    /* Loading & Error */
+    .loading {
+      color: #777;
+      font-size: 0.9rem;
+      padding: 20px 0;
+    }
+
+    .error {
+      color: #ff6b6b;
+      font-size: 0.85rem;
+      padding: 12px;
+      background: rgba(255,107,107,0.1);
+      border-radius: 8px;
+    }
+
+    /* Settings */
+    .settings-bar {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .settings-btn {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+
+    .settings-btn:hover { background: rgba(255,255,255,0.15); color: #ccc; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #1e1e2e;
+      border-radius: 16px;
+      padding: 32px;
+      width: 90%;
+      max-width: 420px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .modal h2 {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .modal label {
+      display: block;
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 6px;
+      margin-top: 14px;
+    }
+
+    .modal input, .modal select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn-primary { background: #7c83ff; color: #fff; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #ccc; }
+    .btn:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+  <div class="settings-bar">
+    <button class="settings-btn" id="settingsBtn">Settings</button>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <h2>Settings</h2>
+      <label for="cityInput">도시 (영문)</label>
+      <input type="text" id="cityInput" placeholder="Seoul">
+      <label for="newsCountry">뉴스 국가</label>
+      <select id="newsCountry">
+        <option value="kr">한국</option>
+        <option value="us">미국</option>
+        <option value="jp">일본</option>
+        <option value="gb">영국</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelSettings">취소</button>
+        <button class="btn btn-primary" id="saveSettings">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clock -->
+  <div class="clock-section">
+    <div class="time" id="clock">--:--</div>
+    <div class="date" id="dateDisplay">-</div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Google 검색..." autofocus>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-grid">
+    <!-- Weather Card -->
+    <div class="card">
+      <div class="card-title">Weather</div>
+      <div id="weatherContent">
+        <div class="loading">날씨 정보를 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- News Card -->
+    <div class="card">
+      <div class="card-title">Top News</div>
+      <div id="newsContent">
+        <div class="loading">뉴스를 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Settings ───
+    const defaults = { city: 'Seoul', newsCountry: 'kr' };
+
+    function getSettings() {
+      try {
+        return { ...defaults, ...JSON.parse(localStorage.getItem('homepage_settings')) };
+      } catch {
+        return { ...defaults };
+      }
+    }
+
+    function saveSettings(s) {
+      localStorage.setItem('homepage_settings', JSON.stringify(s));
+    }
+
+    // ─── Clock ───
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+      document.getElementById('dateDisplay').textContent =
+        now.toLocaleDateString('ko-KR', {
+          year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+        });
+    }
+    updateClock();
+    setInterval(updateClock, 10000);
+
+    // ─── Search ───
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.value.trim()) {
+        window.location.href = `https://www.google.com/search?q=${encodeURIComponent(e.target.value.trim())}`;
+      }
+    });
+
+    // ─── Weather (wttr.in - no API key needed) ───
+    const weatherIcons = {
+      'Clear': '☀️', 'Sunny': '☀️',
+      'Partly cloudy': '⛅', 'Cloudy': '☁️', 'Overcast': '☁️',
+      'Mist': '🌫️', 'Fog': '🌫️',
+      'Light rain': '🌦️', 'Rain': '🌧️', 'Heavy rain': '🌧️',
+      'Light drizzle': '🌦️', 'Drizzle': '🌦️',
+      'Thunderstorm': '⛈️', 'Snow': '🌨️', 'Light snow': '🌨️',
+    };
+
+    function getWeatherIcon(desc) {
+      for (const [key, icon] of Object.entries(weatherIcons)) {
+        if (desc.toLowerCase().includes(key.toLowerCase())) return icon;
+      }
+      return '🌤️';
+    }
+
+    async function loadWeather() {
+      const { city } = getSettings();
+      const el = document.getElementById('weatherContent');
+
+      try {
+        const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
+        if (!res.ok) throw new Error('날씨 데이터를 가져올 수 없습니다');
+
+        const data = await res.json();
+        const current = data.current_condition[0];
+        const desc = current.weatherDesc[0].value;
+        const icon = getWeatherIcon(desc);
+
+        el.innerHTML = `
+          <div class="weather-location">${city}</div>
+          <div class="weather-main">
+            <div class="weather-icon">${icon}</div>
+            <div>
+              <div class="weather-temp">${current.temp_C}°C</div>
+              <div class="weather-desc">${desc}</div>
+            </div>
+          </div>
+          <div class="weather-details">
+            <div class="weather-detail">체감 <span>${current.FeelsLikeC}°C</span></div>
+            <div class="weather-detail">습도 <span>${current.humidity}%</span></div>
+            <div class="weather-detail">바람 <span>${current.windspeedKmph} km/h</span></div>
+            <div class="weather-detail">자외선 <span>${current.uvIndex}</span></div>
+          </div>
+        `;
+      } catch (err) {
+        el.innerHTML = `<div class="error">${err.message}</div>`;
+      }
+    }
+
+    // ─── News (Google News RSS via rss2json) ───
+    async function loadNews() {
+      const { newsCountry } = getSettings();
+      const el = document.getElementById('newsContent');
+
+      const rssUrl = `https://news.google.com/rss?hl=${newsCountry === 'kr' ? 'ko' : 'en'}&gl=${newsCountry.toUpperCase()}&ceid=${newsCountry.toUpperCase()}:${newsCountry === 'kr' ? 'ko' : 'en'}`;
+      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+      try {
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('뉴스를 가져올 수 없습니다');
+
+        const data = await res.json();
+        if (data.status !== 'ok' || !data.items?.length) {
+          throw new Error('뉴스 데이터가 없습니다');
+        }
+
+        const items = data.items.slice(0, 8);
+        el.innerHTML = `
+          <ul class="news-list">
+            ${items.map(item => `
+              <li class="news-item">
+                <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+                <div class="news-source">${item.author || ''}${item.pubDate ? ' · ' + new Date(item.pubDate).toLocaleDateString('ko-KR') : ''}</div>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      } catch (err) {
+        el.innerHTML = `<div class="error">${err.message}<br><br>
+          <a href="https://news.google.com/?hl=ko&gl=KR" target="_blank" style="color:#7c83ff;">Google 뉴스에서 직접 보기</a>
+        </div>`;
+      }
+    }
+
+    // ─── Settings Modal ───
+    document.getElementById('settingsBtn').addEventListener('click', () => {
+      const s = getSettings();
+      document.getElementById('cityInput').value = s.city;
+      document.getElementById('newsCountry').value = s.newsCountry;
+      document.getElementById('settingsModal').classList.add('active');
+    });
+
+    document.getElementById('cancelSettings').addEventListener('click', () => {
+      document.getElementById('settingsModal').classList.remove('active');
+    });
+
+    document.getElementById('saveSettings').addEventListener('click', () => {
+      const city = document.getElementById('cityInput').value.trim() || 'Seoul';
+      const newsCountry = document.getElementById('newsCountry').value;
+      saveSettings({ city, newsCountry });
+      document.getElementById('settingsModal').classList.remove('active');
+      loadWeather();
+      loadNews();
+    });
+
+    document.getElementById('settingsModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        document.getElementById('settingsModal').classList.remove('active');
+      }
+    });
+
+    // ─── Init ───
+    loadWeather();
+    loadNews();
+  </script>
+</body>
+</html>
