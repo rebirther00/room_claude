@@ -282,12 +282,15 @@
       <h2>Settings</h2>
       <label for="cityInput">도시 (영문)</label>
       <input type="text" id="cityInput" placeholder="Seoul">
-      <label for="newsCountry">뉴스 국가</label>
-      <select id="newsCountry">
-        <option value="kr">한국</option>
-        <option value="us">미국</option>
-        <option value="jp">일본</option>
-        <option value="gb">영국</option>
+      <label for="newsCategory">뉴스 카테고리</label>
+      <select id="newsCategory">
+        <option value="main">주요뉴스</option>
+        <option value="politics">정치</option>
+        <option value="economy">경제</option>
+        <option value="society">사회</option>
+        <option value="life">생활/문화</option>
+        <option value="world">세계</option>
+        <option value="it">IT/과학</option>
       </select>
       <div class="modal-actions">
         <button class="btn btn-secondary" id="cancelSettings">취소</button>
@@ -328,7 +331,7 @@
 
   <script>
     // ─── Settings ───
-    const defaults = { city: 'Seoul', newsCountry: 'kr' };
+    const defaults = { city: 'Seoul', newsCategory: 'main' };
 
     function getSettings() {
       try {
@@ -414,37 +417,53 @@
       }
     }
 
-    // ─── News (Google News RSS via rss2json) ───
-    async function loadNews() {
-      const { newsCountry } = getSettings();
-      const el = document.getElementById('newsContent');
+    // ─── News (Naver News RSS) ───
+    const naverRssFeeds = {
+      main: 'https://news.naver.com/main/rss/main.nhn',
+      politics: 'https://news.naver.com/main/rss/main.nhn?id=100',
+      economy: 'https://news.naver.com/main/rss/main.nhn?id=101',
+      society: 'https://news.naver.com/main/rss/main.nhn?id=102',
+      life: 'https://news.naver.com/main/rss/main.nhn?id=103',
+      world: 'https://news.naver.com/main/rss/main.nhn?id=104',
+      it: 'https://news.naver.com/main/rss/main.nhn?id=105',
+    };
 
-      const rssUrl = `https://news.google.com/rss?hl=${newsCountry === 'kr' ? 'ko' : 'en'}&gl=${newsCountry.toUpperCase()}&ceid=${newsCountry.toUpperCase()}:${newsCountry === 'kr' ? 'ko' : 'en'}`;
-      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+    async function loadNews() {
+      const { newsCategory } = getSettings();
+      const el = document.getElementById('newsContent');
+      const rssUrl = naverRssFeeds[newsCategory] || naverRssFeeds.main;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
 
       try {
-        const res = await fetch(apiUrl);
+        const res = await fetch(proxyUrl);
         if (!res.ok) throw new Error('뉴스를 가져올 수 없습니다');
 
-        const data = await res.json();
-        if (data.status !== 'ok' || !data.items?.length) {
-          throw new Error('뉴스 데이터가 없습니다');
-        }
+        const text = await res.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'text/xml');
+        const items = Array.from(xml.querySelectorAll('item')).slice(0, 8);
 
-        const items = data.items.slice(0, 8);
+        if (!items.length) throw new Error('뉴스 데이터가 없습니다');
+
         el.innerHTML = `
           <ul class="news-list">
-            ${items.map(item => `
-              <li class="news-item">
-                <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
-                <div class="news-source">${item.author || ''}${item.pubDate ? ' · ' + new Date(item.pubDate).toLocaleDateString('ko-KR') : ''}</div>
-              </li>
-            `).join('')}
+            ${items.map(item => {
+              const title = item.querySelector('title')?.textContent || '';
+              const link = item.querySelector('link')?.textContent || '';
+              const pubDate = item.querySelector('pubDate')?.textContent || '';
+              const dateStr = pubDate ? new Date(pubDate).toLocaleDateString('ko-KR') : '';
+              return `
+                <li class="news-item">
+                  <a href="${link}" target="_blank" rel="noopener">${title}</a>
+                  <div class="news-source">네이버뉴스${dateStr ? ' · ' + dateStr : ''}</div>
+                </li>
+              `;
+            }).join('')}
           </ul>
         `;
       } catch (err) {
         el.innerHTML = `<div class="error">${err.message}<br><br>
-          <a href="https://news.google.com/?hl=ko&gl=KR" target="_blank" style="color:#7c83ff;">Google 뉴스에서 직접 보기</a>
+          <a href="https://news.naver.com" target="_blank" style="color:#7c83ff;">네이버 뉴스에서 직접 보기</a>
         </div>`;
       }
     }
@@ -453,7 +472,7 @@
     document.getElementById('settingsBtn').addEventListener('click', () => {
       const s = getSettings();
       document.getElementById('cityInput').value = s.city;
-      document.getElementById('newsCountry').value = s.newsCountry;
+      document.getElementById('newsCategory').value = s.newsCategory;
       document.getElementById('settingsModal').classList.add('active');
     });
 
@@ -463,8 +482,8 @@
 
     document.getElementById('saveSettings').addEventListener('click', () => {
       const city = document.getElementById('cityInput').value.trim() || 'Seoul';
-      const newsCountry = document.getElementById('newsCountry').value;
-      saveSettings({ city, newsCountry });
+      const newsCategory = document.getElementById('newsCategory').value;
+      saveSettings({ city, newsCategory });
       document.getElementById('settingsModal').classList.remove('active');
       loadWeather();
       loadNews();
