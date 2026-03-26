@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Homepage</title>
+  <title>My Dashboard</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -12,47 +12,48 @@
       min-height: 100vh;
       background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       color: #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
+      padding: 30px 20px;
     }
 
-    /* Clock & Date */
-    .clock-section {
+    /* ─── Header: Clock + Search ─── */
+    .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
 
     .time {
-      font-size: 5rem;
+      font-size: 4.5rem;
       font-weight: 200;
       letter-spacing: 4px;
       color: #fff;
     }
 
-    .date {
-      font-size: 1.2rem;
-      color: #aaa;
-      margin-top: 8px;
+    .time .seconds {
+      font-size: 2rem;
+      color: #888;
+      vertical-align: super;
     }
 
-    /* Search */
+    .date {
+      font-size: 1.1rem;
+      color: #aaa;
+      margin-top: 6px;
+    }
+
     .search-box {
-      width: 100%;
-      max-width: 600px;
-      margin-bottom: 40px;
+      max-width: 560px;
+      margin: 20px auto 0;
     }
 
     .search-box input {
       width: 100%;
-      padding: 14px 24px;
+      padding: 12px 24px;
       border: none;
       border-radius: 50px;
       background: rgba(255,255,255,0.1);
       backdrop-filter: blur(10px);
       color: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
       transition: background 0.3s;
     }
@@ -60,90 +61,145 @@
     .search-box input::placeholder { color: #888; }
     .search-box input:focus { background: rgba(255,255,255,0.18); }
 
-    /* Main Grid */
-    .main-grid {
+    /* ─── Dashboard Grid ─── */
+    .dashboard {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      width: 100%;
-      max-width: 1000px;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-    @media (max-width: 700px) {
-      .main-grid { grid-template-columns: 1fr; }
+    .dashboard .card-weather { grid-column: 1; grid-row: 1; }
+    .dashboard .card-stocks { grid-column: 2; grid-row: 1; }
+    .dashboard .card-todo { grid-column: 3; grid-row: 1 / 3; }
+    .dashboard .card-news { grid-column: 1 / 3; grid-row: 2; }
+
+    @media (max-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr 1fr;
+      }
+      .dashboard .card-weather { grid-column: 1; grid-row: 1; }
+      .dashboard .card-stocks { grid-column: 2; grid-row: 1; }
+      .dashboard .card-news { grid-column: 1 / 3; grid-row: 2; }
+      .dashboard .card-todo { grid-column: 1 / 3; grid-row: 3; }
+    }
+
+    @media (max-width: 600px) {
+      .dashboard { grid-template-columns: 1fr; }
+      .dashboard .card-weather,
+      .dashboard .card-stocks,
+      .dashboard .card-news,
+      .dashboard .card-todo { grid-column: 1; grid-row: auto; }
       .time { font-size: 3rem; }
+      .time .seconds { font-size: 1.4rem; }
     }
 
-    /* Card */
+    /* ─── Card ─── */
     .card {
       background: rgba(255,255,255,0.07);
       backdrop-filter: blur(12px);
       border-radius: 16px;
-      padding: 24px;
+      padding: 20px;
       border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
     }
 
     .card-title {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 2px;
       color: #888;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    /* Weather */
+    .card-title .refresh-btn {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .card-title .refresh-btn:hover { color: #aaa; }
+
+    /* ─── Weather ─── */
+    .weather-location {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
     .weather-main {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
-    .weather-icon {
-      font-size: 3.5rem;
-    }
-
-    .weather-temp {
-      font-size: 3rem;
-      font-weight: 300;
-      color: #fff;
-    }
-
-    .weather-desc {
-      font-size: 1rem;
-      color: #bbb;
-      text-transform: capitalize;
-    }
+    .weather-icon { font-size: 3rem; }
+    .weather-temp { font-size: 2.5rem; font-weight: 300; color: #fff; }
+    .weather-desc { font-size: 0.9rem; color: #bbb; text-transform: capitalize; }
 
     .weather-details {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 12px;
+      gap: 6px;
     }
 
-    .weather-detail {
+    .weather-detail { font-size: 0.8rem; color: #999; }
+    .weather-detail span { color: #ccc; }
+
+    /* ─── Stocks ─── */
+    .stock-list { list-style: none; }
+
+    .stock-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .stock-item:last-child { border-bottom: none; }
+
+    .stock-name {
       font-size: 0.85rem;
-      color: #999;
-    }
-
-    .weather-detail span {
       color: #ccc;
+      font-weight: 500;
     }
 
-    .weather-location {
-      font-size: 0.9rem;
-      color: #aaa;
-      margin-bottom: 12px;
+    .stock-values {
+      text-align: right;
     }
 
-    /* News */
-    .news-list {
-      list-style: none;
+    .stock-price {
+      font-size: 0.95rem;
+      color: #fff;
+      font-weight: 500;
     }
+
+    .stock-change {
+      font-size: 0.75rem;
+      margin-top: 2px;
+    }
+
+    .stock-up { color: #ff4444; }
+    .stock-down { color: #4488ff; }
+    .stock-flat { color: #888; }
+
+    /* ─── News ─── */
+    .news-list { list-style: none; }
 
     .news-item {
-      padding: 12px 0;
+      padding: 10px 0;
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
@@ -152,7 +208,7 @@
     .news-item a {
       color: #ddd;
       text-decoration: none;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       line-height: 1.5;
       display: block;
       transition: color 0.2s;
@@ -161,49 +217,145 @@
     .news-item a:hover { color: #7c83ff; }
 
     .news-source {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #777;
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
-    /* Loading & Error */
-    .loading {
+    /* ─── Todo ─── */
+    .todo-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .todo-input-row input {
+      flex: 1;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .todo-input-row input::placeholder { color: #666; }
+
+    .todo-input-row button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #7c83ff;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .todo-input-row button:hover { opacity: 0.85; }
+
+    .todo-stats {
+      font-size: 0.75rem;
       color: #777;
+      margin-bottom: 10px;
+    }
+
+    .todo-list {
+      list-style: none;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .todo-item:last-child { border-bottom: none; }
+
+    .todo-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #7c83ff;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .todo-item .todo-text {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #ccc;
+      word-break: break-word;
+    }
+
+    .todo-item.completed .todo-text {
+      text-decoration: line-through;
+      color: #666;
+    }
+
+    .todo-item .todo-delete {
+      background: none;
+      border: none;
+      color: #555;
+      cursor: pointer;
       font-size: 0.9rem;
-      padding: 20px 0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+
+    .todo-item .todo-delete:hover { color: #ff6b6b; }
+
+    .todo-empty {
+      color: #666;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 30px 0;
+    }
+
+    /* ─── Common ─── */
+    .loading {
+      color: #666;
+      font-size: 0.85rem;
+      padding: 16px 0;
     }
 
     .error {
       color: #ff6b6b;
-      font-size: 0.85rem;
-      padding: 12px;
+      font-size: 0.8rem;
+      padding: 10px;
       background: rgba(255,107,107,0.1);
       border-radius: 8px;
     }
 
-    /* Settings */
+    .error a { color: #7c83ff; }
+
+    /* ─── Settings ─── */
     .settings-bar {
       position: fixed;
-      top: 16px;
-      right: 16px;
-      display: flex;
-      gap: 8px;
+      top: 14px;
+      right: 14px;
     }
 
     .settings-btn {
       background: rgba(255,255,255,0.08);
       border: none;
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 6px 12px;
       color: #888;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       transition: background 0.2s;
     }
 
     .settings-btn:hover { background: rgba(255,255,255,0.15); color: #ccc; }
 
-    /* Modal */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -219,50 +371,46 @@
     .modal {
       background: #1e1e2e;
       border-radius: 16px;
-      padding: 32px;
+      padding: 28px;
       width: 90%;
-      max-width: 420px;
+      max-width: 400px;
       border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .modal h2 {
-      font-size: 1.1rem;
-      margin-bottom: 20px;
-      color: #fff;
-    }
+    .modal h2 { font-size: 1rem; margin-bottom: 16px; color: #fff; }
 
     .modal label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: #aaa;
-      margin-bottom: 6px;
-      margin-top: 14px;
+      margin-bottom: 5px;
+      margin-top: 12px;
     }
 
-    .modal input, .modal select {
+    .modal input {
       width: 100%;
-      padding: 10px 14px;
+      padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid rgba(255,255,255,0.1);
       background: rgba(255,255,255,0.05);
       color: #fff;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       outline: none;
     }
 
     .modal-actions {
       display: flex;
-      gap: 10px;
-      margin-top: 24px;
+      gap: 8px;
+      margin-top: 20px;
       justify-content: flex-end;
     }
 
     .btn {
-      padding: 10px 20px;
+      padding: 8px 18px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
     .btn-primary { background: #7c83ff; color: #fff; }
@@ -276,13 +424,11 @@
     <button class="settings-btn" id="settingsBtn">Settings</button>
   </div>
 
-  <!-- Settings Modal -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal">
       <h2>Settings</h2>
-      <label for="cityInput">도시 (영문)</label>
+      <label for="cityInput">날씨 도시 (영문)</label>
       <input type="text" id="cityInput" placeholder="Seoul">
-      <!-- 뉴스 카테고리는 추후 확장 가능 -->
       <div class="modal-actions">
         <button class="btn btn-secondary" id="cancelSettings">취소</button>
         <button class="btn btn-primary" id="saveSettings">저장</button>
@@ -290,30 +436,58 @@
     </div>
   </div>
 
-  <!-- Clock -->
-  <div class="clock-section">
-    <div class="time" id="clock">--:--</div>
+  <!-- Header -->
+  <div class="header">
+    <div class="time" id="clock">--:--<span class="seconds">00</span></div>
     <div class="date" id="dateDisplay">-</div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="검색..." autofocus>
+    </div>
   </div>
 
-  <!-- Search -->
-  <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Google 검색..." autofocus>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-grid">
-    <!-- Weather Card -->
-    <div class="card">
-      <div class="card-title">Weather</div>
+  <!-- Dashboard -->
+  <div class="dashboard">
+    <!-- Weather -->
+    <div class="card card-weather">
+      <div class="card-title">
+        Weather
+        <button class="refresh-btn" onclick="loadWeather()">&#x21bb;</button>
+      </div>
       <div id="weatherContent">
         <div class="loading">날씨 정보를 불러오는 중...</div>
       </div>
     </div>
 
-    <!-- News Card -->
-    <div class="card">
-      <div class="card-title">Top News</div>
+    <!-- Stocks -->
+    <div class="card card-stocks">
+      <div class="card-title">
+        Markets
+        <button class="refresh-btn" onclick="loadStocks()">&#x21bb;</button>
+      </div>
+      <div id="stocksContent">
+        <div class="loading">시장 정보를 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- Todo -->
+    <div class="card card-todo">
+      <div class="card-title">
+        To-Do
+        <span class="todo-stats" id="todoStats"></span>
+      </div>
+      <div class="todo-input-row">
+        <input type="text" id="todoInput" placeholder="할 일 추가...">
+        <button id="todoAddBtn">추가</button>
+      </div>
+      <ul class="todo-list" id="todoList"></ul>
+    </div>
+
+    <!-- News -->
+    <div class="card card-news">
+      <div class="card-title">
+        Top News
+        <button class="refresh-btn" onclick="loadNews()">&#x21bb;</button>
+      </div>
       <div id="newsContent">
         <div class="loading">뉴스를 불러오는 중...</div>
       </div>
@@ -323,41 +497,33 @@
   <script>
     // ─── Settings ───
     const defaults = { city: 'Seoul' };
-
     function getSettings() {
-      try {
-        return { ...defaults, ...JSON.parse(localStorage.getItem('homepage_settings')) };
-      } catch {
-        return { ...defaults };
-      }
+      try { return { ...defaults, ...JSON.parse(localStorage.getItem('dashboard_settings')) }; }
+      catch { return { ...defaults }; }
     }
+    function saveSettingsData(s) { localStorage.setItem('dashboard_settings', JSON.stringify(s)); }
 
-    function saveSettings(s) {
-      localStorage.setItem('homepage_settings', JSON.stringify(s));
-    }
-
-    // ─── Clock ───
+    // ─── Clock (with seconds) ───
     function updateClock() {
       const now = new Date();
-      document.getElementById('clock').textContent =
-        now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
-
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').innerHTML = `${h}:${m}<span class="seconds">${s}</span>`;
       document.getElementById('dateDisplay').textContent =
-        now.toLocaleDateString('ko-KR', {
-          year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
-        });
+        now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
     }
     updateClock();
-    setInterval(updateClock, 10000);
+    setInterval(updateClock, 1000);
 
     // ─── Search ───
     document.getElementById('searchInput').addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && e.target.value.trim()) {
-        window.location.href = `https://www.google.com/search?q=${encodeURIComponent(e.target.value.trim())}`;
+        window.location.href = `https://search.naver.com/search.naver?query=${encodeURIComponent(e.target.value.trim())}`;
       }
     });
 
-    // ─── Weather (wttr.in - no API key needed) ───
+    // ─── Weather ───
     const weatherIcons = {
       'Clear': '☀️', 'Sunny': '☀️',
       'Partly cloudy': '⛅', 'Cloudy': '☁️', 'Overcast': '☁️',
@@ -377,74 +543,144 @@
     async function loadWeather() {
       const { city } = getSettings();
       const el = document.getElementById('weatherContent');
-
       try {
         const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
         if (!res.ok) throw new Error('날씨 데이터를 가져올 수 없습니다');
-
         const data = await res.json();
-        const current = data.current_condition[0];
-        const desc = current.weatherDesc[0].value;
-        const icon = getWeatherIcon(desc);
-
+        const c = data.current_condition[0];
+        const desc = c.weatherDesc[0].value;
         el.innerHTML = `
           <div class="weather-location">${city}</div>
           <div class="weather-main">
-            <div class="weather-icon">${icon}</div>
+            <div class="weather-icon">${getWeatherIcon(desc)}</div>
             <div>
-              <div class="weather-temp">${current.temp_C}°C</div>
+              <div class="weather-temp">${c.temp_C}°C</div>
               <div class="weather-desc">${desc}</div>
             </div>
           </div>
           <div class="weather-details">
-            <div class="weather-detail">체감 <span>${current.FeelsLikeC}°C</span></div>
-            <div class="weather-detail">습도 <span>${current.humidity}%</span></div>
-            <div class="weather-detail">바람 <span>${current.windspeedKmph} km/h</span></div>
-            <div class="weather-detail">자외선 <span>${current.uvIndex}</span></div>
-          </div>
-        `;
+            <div class="weather-detail">체감 <span>${c.FeelsLikeC}°C</span></div>
+            <div class="weather-detail">습도 <span>${c.humidity}%</span></div>
+            <div class="weather-detail">바람 <span>${c.windspeedKmph} km/h</span></div>
+            <div class="weather-detail">자외선 <span>${c.uvIndex}</span></div>
+          </div>`;
       } catch (err) {
         el.innerHTML = `<div class="error">${err.message}</div>`;
       }
     }
 
-    // ─── News (via server API) ───
-    async function loadNews() {
-      const el = document.getElementById('newsContent');
-
+    // ─── Stocks ───
+    async function loadStocks() {
+      const el = document.getElementById('stocksContent');
       try {
-        const res = await fetch('/api/news');
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const res = await fetch('/api/stocks');
+        if (!res.ok) throw new Error('Server error');
         const data = await res.json();
-        if (data.status !== 'ok' || !data.items?.length) {
-          throw new Error(data.message || 'No news items');
-        }
+        if (data.status !== 'ok' || !data.items?.length) throw new Error(data.message || 'No data');
 
-        el.innerHTML = `
-          <ul class="news-list">
-            ${data.items.map(item => {
-              const dateStr = item.pubDate ? new Date(item.pubDate).toLocaleDateString('ko-KR') : '';
-              return `
-                <li class="news-item">
-                  <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
-                  ${dateStr ? `<div class="news-source">${dateStr}</div>` : ''}
-                </li>
-              `;
-            }).join('')}
-          </ul>
-        `;
-      } catch (err) {
-        el.innerHTML = `<div class="error">뉴스를 가져올 수 없습니다.<br><br>
-          <code>node server.js</code> 실행 후 <a href="http://localhost:3000" style="color:#7c83ff;">localhost:3000</a> 접속<br><br>
-          <a href="https://news.naver.com" target="_blank" style="color:#7c83ff;">네이버 뉴스에서 직접 보기</a>
-        </div>`;
+        el.innerHTML = `<ul class="stock-list">${data.items.map(s => {
+          const cls = s.change > 0 ? 'stock-up' : s.change < 0 ? 'stock-down' : 'stock-flat';
+          const sign = s.change > 0 ? '+' : '';
+          const arrow = s.change > 0 ? '▲' : s.change < 0 ? '▼' : '';
+          return `
+            <li class="stock-item">
+              <div class="stock-name">${s.name}</div>
+              <div class="stock-values">
+                <div class="stock-price">${s.price}</div>
+                <div class="stock-change ${cls}">${arrow} ${sign}${s.change} (${sign}${s.changePercent}%)</div>
+              </div>
+            </li>`;
+        }).join('')}</ul>`;
+      } catch {
+        el.innerHTML = `<div class="error">시장 정보를 불러올 수 없습니다.</div>`;
       }
     }
 
+    // ─── News ───
+    async function loadNews() {
+      const el = document.getElementById('newsContent');
+      try {
+        const res = await fetch('/api/news');
+        if (!res.ok) throw new Error('Server error');
+        const data = await res.json();
+        if (data.status !== 'ok' || !data.items?.length) throw new Error(data.message || 'No news');
+
+        el.innerHTML = `<ul class="news-list">${data.items.map(item => `
+          <li class="news-item">
+            <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+            ${item.source ? `<div class="news-source">${item.source}</div>` : ''}
+          </li>`).join('')}</ul>`;
+      } catch {
+        el.innerHTML = `<div class="error">뉴스를 불러올 수 없습니다.<br>
+          <a href="https://news.naver.com" target="_blank">네이버 뉴스 직접 보기</a></div>`;
+      }
+    }
+
+    // ─── Todo (localStorage) ───
+    function getTodos() {
+      try { return JSON.parse(localStorage.getItem('dashboard_todos')) || []; }
+      catch { return []; }
+    }
+
+    function saveTodos(todos) {
+      localStorage.setItem('dashboard_todos', JSON.stringify(todos));
+    }
+
+    function renderTodos() {
+      const todos = getTodos();
+      const list = document.getElementById('todoList');
+      const stats = document.getElementById('todoStats');
+      const done = todos.filter(t => t.done).length;
+      stats.textContent = todos.length ? `${done}/${todos.length}` : '';
+
+      if (!todos.length) {
+        list.innerHTML = '<div class="todo-empty">할 일을 추가해보세요!</div>';
+        return;
+      }
+
+      list.innerHTML = todos.map((t, i) => `
+        <li class="todo-item ${t.done ? 'completed' : ''}">
+          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${i})">
+          <span class="todo-text">${escapeHtml(t.text)}</span>
+          <button class="todo-delete" onclick="deleteTodo(${i})">×</button>
+        </li>`).join('');
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function addTodo() {
+      const input = document.getElementById('todoInput');
+      const text = input.value.trim();
+      if (!text) return;
+      const todos = getTodos();
+      todos.push({ text, done: false });
+      saveTodos(todos);
+      input.value = '';
+      renderTodos();
+    }
+
+    function toggleTodo(i) {
+      const todos = getTodos();
+      if (todos[i]) { todos[i].done = !todos[i].done; saveTodos(todos); renderTodos(); }
+    }
+
+    function deleteTodo(i) {
+      const todos = getTodos();
+      todos.splice(i, 1);
+      saveTodos(todos);
+      renderTodos();
+    }
+
+    document.getElementById('todoAddBtn').addEventListener('click', addTodo);
+    document.getElementById('todoInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addTodo();
+    });
+
     // ─── Settings Modal ───
     document.getElementById('settingsBtn').addEventListener('click', () => {
-      const s = getSettings();
-      document.getElementById('cityInput').value = s.city;
+      document.getElementById('cityInput').value = getSettings().city;
       document.getElementById('settingsModal').classList.add('active');
     });
 
@@ -453,22 +689,24 @@
     });
 
     document.getElementById('saveSettings').addEventListener('click', () => {
-      const city = document.getElementById('cityInput').value.trim() || 'Seoul';
-      saveSettings({ city });
+      saveSettingsData({ city: document.getElementById('cityInput').value.trim() || 'Seoul' });
       document.getElementById('settingsModal').classList.remove('active');
       loadWeather();
-      loadNews();
     });
 
     document.getElementById('settingsModal').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) {
-        document.getElementById('settingsModal').classList.remove('active');
-      }
+      if (e.target === e.currentTarget) document.getElementById('settingsModal').classList.remove('active');
     });
 
-    // ─── Init ───
+    // ─── Init & Auto-refresh ───
     loadWeather();
+    loadStocks();
     loadNews();
+    renderTodos();
+
+    setInterval(loadWeather, 600000);  // 10분
+    setInterval(loadStocks, 60000);    // 1분
+    setInterval(loadNews, 300000);     // 5분
   </script>
 </body>
 </html>
