@@ -282,16 +282,7 @@
       <h2>Settings</h2>
       <label for="cityInput">도시 (영문)</label>
       <input type="text" id="cityInput" placeholder="Seoul">
-      <label for="newsCategory">뉴스 카테고리</label>
-      <select id="newsCategory">
-        <option value="main">주요뉴스</option>
-        <option value="politics">정치</option>
-        <option value="economy">경제</option>
-        <option value="society">사회</option>
-        <option value="life">생활/문화</option>
-        <option value="world">세계</option>
-        <option value="it">IT/과학</option>
-      </select>
+      <!-- 뉴스 카테고리는 추후 확장 가능 -->
       <div class="modal-actions">
         <button class="btn btn-secondary" id="cancelSettings">취소</button>
         <button class="btn btn-primary" id="saveSettings">저장</button>
@@ -331,7 +322,7 @@
 
   <script>
     // ─── Settings ───
-    const defaults = { city: 'Seoul', newsCategory: 'main' };
+    const defaults = { city: 'Seoul' };
 
     function getSettings() {
       try {
@@ -417,87 +408,34 @@
       }
     }
 
-    // ─── News (Naver News via server API with CORS proxy fallback) ───
-    function renderNews(items) {
-      return `
-        <ul class="news-list">
-          ${items.map(item => {
-            const dateStr = item.pubDate ? new Date(item.pubDate).toLocaleDateString('ko-KR') : '';
-            return `
-              <li class="news-item">
-                <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
-                <div class="news-source">네이버뉴스${dateStr ? ' · ' + dateStr : ''}</div>
-              </li>
-            `;
-          }).join('')}
-        </ul>
-      `;
-    }
-
-    // Strategy 1: Local server API (node server.js)
-    async function fetchFromServer(category) {
-      const res = await fetch(`/api/news?category=${category}`);
-      if (!res.ok) throw new Error('Server API failed');
-      const data = await res.json();
-      if (data.status !== 'ok' || !data.items?.length) throw new Error('No items');
-      return data.items;
-    }
-
-    // Strategy 2: CORS proxy fallback (for static file usage)
-    async function fetchFromProxy(category) {
-      const rssUrls = {
-        main: 'https://news.naver.com/main/rss/main.nhn',
-        politics: 'https://news.naver.com/main/rss/main.nhn?id=100',
-        economy: 'https://news.naver.com/main/rss/main.nhn?id=101',
-        society: 'https://news.naver.com/main/rss/main.nhn?id=102',
-        life: 'https://news.naver.com/main/rss/main.nhn?id=103',
-        world: 'https://news.naver.com/main/rss/main.nhn?id=104',
-        it: 'https://news.naver.com/main/rss/main.nhn?id=105',
-      };
-      const rssUrl = rssUrls[category] || rssUrls.main;
-
-      const proxies = [
-        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-      ];
-
-      for (const makeUrl of proxies) {
-        try {
-          const res = await fetch(makeUrl(rssUrl), { signal: AbortSignal.timeout(8000) });
-          if (!res.ok) continue;
-          const text = await res.text();
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(text, 'text/xml');
-          if (xml.querySelector('parsererror')) continue;
-          const xmlItems = Array.from(xml.querySelectorAll('item')).slice(0, 10);
-          if (!xmlItems.length) continue;
-          return xmlItems.map(item => ({
-            title: item.querySelector('title')?.textContent || '',
-            link: item.querySelector('link')?.textContent || '',
-            pubDate: item.querySelector('pubDate')?.textContent || '',
-          }));
-        } catch { continue; }
-      }
-      throw new Error('All proxies failed');
-    }
-
+    // ─── News (via server API) ───
     async function loadNews() {
-      const { newsCategory } = getSettings();
       const el = document.getElementById('newsContent');
 
       try {
-        // Try server API first, then CORS proxy fallback
-        let items;
-        try {
-          items = await fetchFromServer(newsCategory);
-        } catch {
-          items = await fetchFromProxy(newsCategory);
+        const res = await fetch('/api/news');
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        if (data.status !== 'ok' || !data.items?.length) {
+          throw new Error(data.message || 'No news items');
         }
-        el.innerHTML = renderNews(items);
+
+        el.innerHTML = `
+          <ul class="news-list">
+            ${data.items.map(item => {
+              const dateStr = item.pubDate ? new Date(item.pubDate).toLocaleDateString('ko-KR') : '';
+              return `
+                <li class="news-item">
+                  <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+                  ${dateStr ? `<div class="news-source">${dateStr}</div>` : ''}
+                </li>
+              `;
+            }).join('')}
+          </ul>
+        `;
       } catch (err) {
         el.innerHTML = `<div class="error">뉴스를 가져올 수 없습니다.<br><br>
-          <strong>서버 모드:</strong> <code>node server.js</code> 실행 후 <a href="http://localhost:3000" style="color:#7c83ff;">localhost:3000</a> 접속<br><br>
+          <code>node server.js</code> 실행 후 <a href="http://localhost:3000" style="color:#7c83ff;">localhost:3000</a> 접속<br><br>
           <a href="https://news.naver.com" target="_blank" style="color:#7c83ff;">네이버 뉴스에서 직접 보기</a>
         </div>`;
       }
@@ -507,7 +445,6 @@
     document.getElementById('settingsBtn').addEventListener('click', () => {
       const s = getSettings();
       document.getElementById('cityInput').value = s.city;
-      document.getElementById('newsCategory').value = s.newsCategory;
       document.getElementById('settingsModal').classList.add('active');
     });
 
@@ -517,8 +454,7 @@
 
     document.getElementById('saveSettings').addEventListener('click', () => {
       const city = document.getElementById('cityInput').value.trim() || 'Seoul';
-      const newsCategory = document.getElementById('newsCategory').value;
-      saveSettings({ city, newsCategory });
+      saveSettings({ city });
       document.getElementById('settingsModal').classList.remove('active');
       loadWeather();
       loadNews();
